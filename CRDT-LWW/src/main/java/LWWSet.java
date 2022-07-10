@@ -1,10 +1,13 @@
 package main.java;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Last-Writer-Wins Element Set class that handle CRDT data structure.
@@ -43,6 +46,35 @@ public class LWWSet<T> {
 	 */
 	public Timestamp Remove(T element) {
 		return Remove(element, new Date());
+	}
+
+	/**
+	 * Verify if an element exists in LWWSet.
+	 *
+	 * @param element The element to be verified.
+	 * @return boolean true if the element exists.
+	 */
+	public boolean Exists(T element) {
+		var addTime = addSet.get(element);
+		var removeTime = removeSet.get(element);
+
+		if (addTime == null) {
+			return false;
+		}
+		if (removeTime == null) {
+			return true;
+		}
+
+		return addTime.after(removeTime);
+	}
+
+	/**
+	 * Generate a collection with all existing elements
+	 *
+	 * @return Returns a List with all elements exists.
+	 */
+	public List<T> Get() {
+		return addSet.keySet().stream().filter(e -> Exists(e)).collect(Collectors.toList());
 	}
 
 	/**
